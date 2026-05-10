@@ -1,0 +1,24 @@
+.badge {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px; border-radius: var(--radius);
+  background: var(--white); box-shadow: var(--shadow);
+  transition: transform var(--transition);
+}
+.badge:hover { transform: scale(1.02); }
+.locked { opacity: 0.4; filter: grayscale(1); }
+
+.ring {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.icon { font-size: 1.4rem; }
+
+.info { flex: 1; min-width: 0; }
+.name { font-size: 0.85rem; font-weight: 600; color: var(--gray-800); }
+.level { font-size: 0.72rem; color: var(--gray-400); text-transform: capitalize; margin-top: 2px; }
+
+.progressWrap { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.progressBar { flex: 1; height: 5px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+.progressFill { height: 100%; background: var(--green-500); border-radius: 3px; transition: width 0.5s ease; }
+.progressPct { font-size: 0.7rem; color: var(--gray-400); }

@@ -1,0 +1,37 @@
+.page { min-height: 100vh; background: var(--gray-50); }
+.header { text-align: center; padding: 40px 20px 16px; }
+.title { font-family: var(--font-display); font-size: 2rem; color: var(--gray-800); margin-bottom: 8px; }
+.sub { color: var(--gray-500); }
+
+.mapWrap {
+  position: relative; background: white;
+  border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200);
+  overflow: hidden;
+}
+
+.tooltip {
+  position: absolute; top: 20px; left: 20px;
+  background: white; border-radius: var(--radius-sm); padding: 10px 14px;
+  box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 2px;
+  pointer-events: none;
+}
+.tooltip strong { font-size: 0.9rem; color: var(--gray-800); }
+.tooltip span { font-size: 0.8rem; color: var(--gray-500); }
+
+.container { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+
+.legend { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; font-size: 0.8rem; color: var(--gray-500); }
+.legendBar {
+  flex: 1; height: 12px; border-radius: 6px;
+  background: linear-gradient(to right, #d1fae5, #16a34a);
+}
+
+.topSection {}
+.topTitle { font-size: 1.2rem; font-weight: 700; color: var(--gray-800); margin-bottom: 16px; }
+.topGrid { display: flex; flex-direction: column; gap: 8px; }
+.topCard { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: white; border-radius: var(--radius-sm); box-shadow: var(--shadow); transition: box-shadow var(--transition); }
+.topCard:hover { box-shadow: var(--shadow-md); }
+.topBar { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+.topFill { height: 100%; background: var(--green-500); border-radius: 3px; transition: width 0.5s ease; }
+.topInfo { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--gray-700); }
+.topCount { font-weight: 600; color: var(--green-700); }

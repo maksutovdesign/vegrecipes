@@ -1,0 +1,30 @@
+.wrap { display: flex; flex-direction: column; gap: 16px; }
+
+.donutWrap { position: relative; }
+
+.center {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.kcal { font-size: 1.6rem; font-weight: 700; color: var(--gray-800); }
+.kcalLabel { font-size: 0.75rem; color: var(--gray-400); }
+
+.legend { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+.legendItem { display: flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legendLabel { font-size: 0.8rem; color: var(--gray-600); flex: 1; }
+.legendValue { font-size: 0.8rem; font-weight: 600; color: var(--gray-800); }
+
+.vitamins { display: flex; flex-direction: column; gap: 6px; }
+
+.vitaminRow { display: flex; align-items: center; gap: 8px; }
+.vitaminLabel { width: 56px; font-size: 0.75rem; color: var(--gray-500); }
+.vitaminBar {
+  flex: 1; height: 6px; background: var(--gray-100);
+  border-radius: 3px; overflow: hidden;
+}
+.vitaminFill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.vitaminVal { width: 64px; font-size: 0.72rem; color: var(--gray-500); text-align: right; }

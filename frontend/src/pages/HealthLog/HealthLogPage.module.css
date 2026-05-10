@@ -1,0 +1,45 @@
+.page { min-height: 100vh; background: var(--gray-50); }
+.container { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+.title { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 1.8rem; color: var(--gray-800); margin-bottom: 24px; }
+
+.periodTabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.periodTab { padding: 7px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; color: var(--gray-500); border: 2px solid var(--gray-200); transition: all var(--transition); }
+.periodTab:hover { border-color: var(--green-400); }
+.periodTabActive { background: var(--green-600); color: white; border-color: var(--green-600); }
+
+.card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.cardTitle { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95rem; color: var(--gray-800); margin-bottom: 16px; }
+
+.deficitsCard { border-left: 3px solid var(--orange-500); }
+.deficitsNote { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 14px; }
+.deficitsGrid { display: flex; flex-direction: column; gap: 10px; }
+.deficit { display: grid; grid-template-columns: 80px 1fr 44px auto; align-items: center; gap: 10px; }
+.deficitName { font-size: 0.85rem; color: var(--gray-700); }
+.deficitBar { height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+.deficitFill { height: 100%; background: var(--orange-500); border-radius: 3px; }
+.deficitPct { font-size: 0.78rem; color: var(--gray-500); }
+.deficitLink { font-size: 0.78rem; color: var(--green-600); white-space: nowrap; }
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 60px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); color: var(--gray-400); text-align: center; }
+
+/* Fridge scanner */
+.fridgeNote { font-size: 0.85rem; color: var(--gray-500); margin-bottom: 12px; }
+.fridgeSearch { display: flex; gap: 8px; margin-bottom: 16px; }
+.fridgeInput { flex: 1; padding: 10px 16px; border: 2px solid var(--gray-200); border-radius: 24px; font-size: 0.88rem; outline: none; transition: border-color var(--transition); }
+.fridgeInput:focus { border-color: var(--green-500); }
+.fridgeBtn { display: flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 24px; background: var(--green-600); color: white; font-weight: 600; font-size: 0.88rem; }
+.fridgeBtn:hover:not(:disabled) { background: var(--green-700); }
+.fridgeBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.fridgeAI { background: var(--green-50); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 14px; }
+.fridgeAILabel { font-size: 0.8rem; font-weight: 600; color: var(--green-700); margin-bottom: 6px; }
+.fridgeAI p { font-size: 0.85rem; color: var(--gray-700); line-height: 1.6; }
+
+.fridgeResults { display: flex; flex-direction: column; gap: 8px; }
+.fridgeItem { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--gray-100); transition: border-color var(--transition); }
+.fridgeItem:hover { border-color: var(--green-300); }
+.fridgeMatch { flex-shrink: 0; }
+.fridgeMatchBar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 0.7rem; font-weight: 700; }
+.fridgeItemInfo { flex: 1; }
+.fridgeItemTitle { font-weight: 600; font-size: 0.88rem; color: var(--gray-800); }
+.fridgeMissing { font-size: 0.78rem; color: var(--gray-400); margin-top: 3px; }

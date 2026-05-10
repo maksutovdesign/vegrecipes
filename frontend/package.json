@@ -1,0 +1,45 @@
+{
+  "name": "vegrecipes-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "@tanstack/react-query": "^5.40.0",
+    "@tanstack/react-query-devtools": "^5.40.0",
+    "zustand": "^4.5.2",
+    "axios": "^1.7.2",
+    "recharts": "^2.12.7",
+    "framer-motion": "^11.2.10",
+    "react-simple-maps": "^3.0.0",
+    "d3": "^7.9.0",
+    "@stripe/stripe-js": "^3.4.1",
+    "@stripe/react-stripe-js": "^2.7.1",
+    "react-intersection-observer": "^9.10.3",
+    "react-hot-toast": "^2.4.1",
+    "date-fns": "^3.6.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.390.0",
+    "react-helmet-async": "^2.0.4",
+    "@sentry/react": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/d3": "^7.4.3",
+    "@types/react-simple-maps": "^3.0.6",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13",
+    "eslint": "^9.5.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0"
+  }
+}

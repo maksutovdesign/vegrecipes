@@ -1,0 +1,44 @@
+.page { min-height: 100vh; background: var(--gray-50); }
+.container { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
+
+.profileCard { background: white; border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow-md); display: flex; align-items: flex-start; gap: 24px; margin-bottom: 24px; }
+.avatarLarge {
+  position: relative; width: 80px; height: 80px; border-radius: 50%;
+  background: var(--green-600); color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 700; flex-shrink: 0;
+}
+.proCrown { position: absolute; bottom: -4px; right: -4px; background: var(--amber-400); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; color: white; }
+
+.profileInfo { flex: 1; }
+.name { font-family: var(--font-display); font-size: 1.6rem; color: var(--gray-800); margin-bottom: 4px; }
+.email { font-size: 0.88rem; color: var(--gray-400); margin-bottom: 12px; }
+.profileMeta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.82rem; color: var(--gray-500); margin-bottom: 12px; }
+.profileMeta span { display: flex; align-items: center; gap: 4px; }
+
+.subBadge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 12px; border-radius: 14px; font-size: 0.8rem; font-weight: 600; background: var(--gray-100); color: var(--gray-500); margin-bottom: 10px; }
+.proBadge { background: linear-gradient(135deg, var(--amber-400), var(--orange-500)); color: white; }
+.upgradeLink { font-size: 0.82rem; color: var(--green-600); display: block; }
+.upgradeLink:hover { color: var(--green-800); }
+
+.statsGrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 32px; }
+.statCard { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.statValue { font-size: 1.4rem; font-weight: 700; color: var(--gray-800); }
+.statLabel { font-size: 0.78rem; color: var(--gray-400); }
+
+.section { margin-bottom: 36px; }
+.sectionTitle { font-size: 1.2rem; font-weight: 700; color: var(--gray-800); margin-bottom: 16px; }
+
+.achievementsGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+
+.favGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.emptyFav { color: var(--gray-400); font-size: 0.88rem; }
+.emptyAch { background: var(--gray-50); border-radius: var(--radius); padding: 20px; color: var(--gray-500); font-size: 0.9rem; line-height: 1.6; }
+.achCount { display: inline-flex; align-items: center; justify-content: center; background: var(--green-100); color: var(--green-700); border-radius: 12px; font-size: 0.78rem; font-weight: 700; padding: 2px 8px; margin-left: 8px; }
+
+.verifyBanner { display: flex; align-items: center; gap: 10px; background: var(--amber-50, #fffbeb); border: 1px solid var(--amber-200, #fde68a); border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: 0.82rem; color: var(--amber-700, #92400e); }
+.verifyBtn { background: var(--amber-400, #fbbf24); color: white; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.78rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.verifyBtn:hover { background: var(--amber-500, #f59e0b); }
+.verifiedBadge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; color: var(--green-600); margin-bottom: 8px; }
+
+@media (max-width: 600px) { .profileCard { flex-direction: column; } .statsGrid { grid-template-columns: repeat(3, 1fr); } }

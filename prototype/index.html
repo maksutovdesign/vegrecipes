@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VegRecipes — прототип</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --canvas:   #F7F5F0;
+    --white:    #FFFFFF;
+    --green6:   #16A34A;
+    --green1:   #DCFCE7;
+    --gray900:  #111827;
+    --gray700:  #374151;
+    --gray500:  #6B7280;
+    --gray400:  #9CA3AF;
+    --gray200:  #E5E7EB;
+    --gray100:  #F3F4F6;
+    --amber5:   #F59E0B;
+    --red4:     #F87171;
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+  }
+
+  body { background: #e8e5df; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 32px 16px; gap: 32px; flex-wrap: wrap; }
+
+  /* ── Phone shell ── */
+  .phone-shell {
+    width: 390px;
+    height: 844px;
+    background: var(--white);
+    border-radius: 54px;
+    box-shadow: 0 40px 120px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.1), inset 0 0 0 2px rgba(255,255,255,.6);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Notch */
+  .phone-shell::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%; transform: translateX(-50%);
+    width: 120px; height: 34px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+
+  .phone-inner {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    border-radius: 54px;
+    background: var(--canvas);
+    position: relative;
+  }
+
+  /* ── Screens container ── */
+  .screens {
+    position: absolute;
+    top: 0; left: 0;
+    width: 2730px; /* 7 screens × 390px */
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+  }
+
+  .screen {
+    width: 390px;
+    height: 844px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+    background: var(--canvas);
+    padding-bottom: 90px;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    height: 54px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 24px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    position: sticky; top: 0; z-index: 50;
+    background: var(--canvas);
+  }
+  .status-bar.dark { background: transparent; color: #fff; }
+  .status-bar-right { display: flex; gap: 6px; align-items: center; }
+
+  /* ── Tab bar ── */
+  .tab-bar {
+    position: fixed;
+    bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 390px;
+    height: 84px;
+    background: rgba(255,255,255,.95);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0,0,0,.07);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 8px 20px;
+    z-index: 200;
+  }
+  .tab-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; padding: 6px 12px; border-radius: 12px;
+    transition: background .15s;
+    border: none; background: none;
+  }
+  .tab-item:hover { background: var(--gray100); }
+  .tab-label { font-size: 10px; color: var(--gray400); font-weight: 500; }
+  .tab-item.active .tab-label { color: var(--green6); font-weight: 600; }
+
+  /* ── Typography ── */
+  h1 { font-size: 28px; font-weight: 800; color: var(--gray900); }
+  h2 { font-size: 20px; font-weight: 800; color: var(--gray900); }
+  h3 { font-size: 16px; font-weight: 700; color: var(--gray900); }
+
+  /* ── Section header ── */
+  .section-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 20px 10px; }
+  .see-all { font-size: 13px; color: var(--green6); font-weight: 600; cursor: pointer; }
+
+  /* ── Category chips ── */
+  .chips-scroll { display: flex; gap: 8px; padding: 0 20px 4px; overflow-x: auto; scrollbar-width: none; }
+  .chips-scroll::-webkit-scrollbar { display: none; }
+  .chip { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 20px; background: var(--white); font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1.5px solid transparent; box-shadow: 0 1px 4px rgba(0,0,0,.08); transition: all .15s; }
+  .chip.active { background: var(--green6); color: #fff; }
+  .chip:hover:not(.active) { border-color: var(--green6); color: var(--green6); }
+  .chip-icon { font-size: 15px; }
+
+  /* ── Hero card ── */
+  .hero-card { margin: 12px 20px; border-radius: var(--radius-lg); overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,.15); }
+  .hero-image { width: 100%; height: 260px; object-fit: cover; display: block; }
+  .hero-placeholder { width: 100%; height: 260px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .hero-overlay { position: absolute; bottom: 0; left: 0; right: 0; height: 160px; background: linear-gradient(to top, rgba(0,0,0,.75), transparent); }
+  .hero-accent-strip { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+  .hero-cat-badge { position: absolute; top: 12px; left: 12px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; }
+  .hero-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; }
+  .hero-title { font-size: 18px; font-weight: 800; color: #fff; line-height: 1.3; margin-bottom: 6px; }
+  .hero-meta { display: flex; gap: 10px; }
+  .hero-meta-item { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,.85); font-size: 12px; font-weight: 500; }
+
+  /* ── Grid cards ── */
+  .cards-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px; }
+  .v-card { background: var(--white); border-radius: var(--radius-md); overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.08); transition: transform .15s, box-shadow .15s; }
+  .v-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+  .v-card-img { width: 100%; height: 130px; position: relative; overflow: hidden; }
+  .v-card-bar { height: 3px; }
+  .v-card-body { padding: 8px 10px 10px; }
+  .v-cat-row { display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+  .v-cat-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .v-cat-text { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+  .v-card-title { font-size: 13px; font-weight: 700; color: var(--gray900); line-height: 1.35; margin-bottom: 6px; }
+  .v-card-footer { display: flex; justify-content: space-between; align-items: center; }
+  .v-meta { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--gray500); }
+
+  /* ── Horizontal cards ── */
+  .h-card { display: flex; background: var(--white); border-radius: var(--radius-md); overflow: hidden; margin: 0 20px 10px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.08); position: relative; transition: transform .15s; }
+  .h-card:hover { transform: translateY(-1px); }
+  .h-strip { width: 4px; flex-shrink: 0; }
+  .h-img { width: 90px; height: 90px; flex-shrink: 0; }
+  .h-body { flex: 1; padding: 10px 12px; }
+  .h-cat-pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; margin-bottom: 4px; }
+  .h-title { font-size: 14px; font-weight: 700; color: var(--gray900); line-height: 1.3; margin-bottom: 5px; }
+  .h-meta { display: flex; gap: 10px; }
+  .h-meta-item { display: flex; align-items: center; gap: 3px; font-size: 11px; color: var(--gray500); }
+
+  /* ── SVG Placeholder ── */
+  .svg-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+
+  /* ── Search bar ── */
+  .search-wrap { padding: 12px 20px; }
+  .search-box { display: flex; align-items: center; gap: 10px; background: var(--white); border-radius: var(--radius-sm); padding: 11px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .search-input { border: none; background: none; outline: none; font-size: 15px; color: var(--gray700); flex: 1; }
+  .search-input::placeholder { color: var(--gray400); }
+
+  /* ── Feed page header ── */
+  .feed-top { padding: 8px 20px 4px; display: flex; justify-content: space-between; align-items: center; }
+
+  /* ── Recipe detail ── */
+  .detail-hero { position: relative; height: 340px; overflow: hidden; }
+  .detail-hero-img { width: 100%; height: 340px; object-fit: cover; }
+  .detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.6) 0%, transparent 60%); }
+  .detail-hero-strip { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; }
+  .detail-hero-badge { position: absolute; top: 64px; left: 16px; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: #fff; }
+  .detail-hero-nav { position: absolute; top: 64px; left: 16px; right: 16px; display: flex; justify-content: space-between; }
+  .detail-back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+  .detail-share-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+  .detail-card { background: var(--white); border-radius: var(--radius-xl) var(--radius-xl) 0 0; margin-top: -32px; position: relative; z-index: 2; padding: 24px 20px 0; min-height: 600px; }
+  .detail-title { font-size: 22px; font-weight: 800; color: var(--gray900); line-height: 1.3; margin-bottom: 12px; }
+  .detail-meta-row { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+  .detail-meta-chip { display: flex; align-items: center; gap: 6px; background: var(--gray100); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--gray700); }
+  .detail-tabs { display: flex; gap: 0; background: var(--gray100); border-radius: var(--radius-sm); padding: 3px; margin-bottom: 20px; }
+  .detail-tab { flex: 1; text-align: center; padding: 8px 4px; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--gray500); cursor: pointer; border: none; background: none; transition: all .2s; }
+  .detail-tab.active { background: var(--white); color: var(--gray900); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+  .step-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0; margin-top: 2px; }
+  .step-text { font-size: 14px; line-height: 1.55; color: var(--gray700); flex: 1; }
+  .ing-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray100); }
+  .ing-name { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--gray900); font-weight: 500; }
+  .ing-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .ing-amount { font-size: 13px; font-weight: 700; }
+  .nutr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .nutr-cell { border-radius: var(--radius-sm); padding: 14px; text-align: center; }
+  .nutr-val { font-size: 22px; font-weight: 800; }
+  .nutr-label { font-size: 11px; color: var(--gray500); margin-top: 2px; }
+
+  /* ── Profile page ── */
+  .profile-header { text-align: center; padding: 24px 20px 16px; }
+  .avatar-ring { width: 88px; height: 88px; border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; background: var(--green1); border: 3px solid var(--green6); font-size: 36px; }
+  .profile-name { font-size: 20px; font-weight: 800; color: var(--gray900); }
+  .profile-sub { font-size: 13px; color: var(--gray500); margin-top: 3px; }
+  .stats-row { display: flex; justify-content: center; gap: 32px; margin: 16px 0; }
+  .stat-item { text-align: center; }
+  .stat-num { font-size: 20px; font-weight: 800; color: var(--gray900); }
+  .stat-label { font-size: 11px; color: var(--gray500); }
+  .settings-list { margin: 0 20px; }
+  .settings-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: var(--white); border-radius: var(--radius-md); margin-bottom: 8px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.06); transition: transform .1s; }
+  .settings-item:hover { transform: scale(.99); }
+  .settings-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .settings-label { font-size: 15px; font-weight: 600; color: var(--gray900); flex: 1; }
+  .settings-chevron { color: var(--gray400); }
+
+  /* ── Roulette ── */
+  .roulette-wrap { display: flex; flex-direction: column; align-items: center; padding: 24px 20px; }
+  .roulette-wheel { width: 240px; height: 240px; border-radius: 50%; border: 6px solid var(--white); box-shadow: 0 8px 40px rgba(0,0,0,.2); display: flex; align-items: center; justify-content: center; margin: 0 auto 28px; position: relative; overflow: hidden; cursor: pointer; transition: transform .4s; }
+  .roulette-wheel:active { transform: rotate(720deg) scale(.97); }
+  .roulette-btn { background: var(--green6); color: #fff; font-size: 16px; font-weight: 800; border: none; border-radius: var(--radius-md); padding: 16px 40px; cursor: pointer; box-shadow: 0 4px 16px rgba(22,163,74,.4); margin-top: 4px; transition: transform .1s, box-shadow .1s; }
+  .roulette-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(22,163,74,.5); }
+  .roulette-btn:active { transform: translateY(0); }
+  .roulette-result { background: var(--white); border-radius: var(--radius-lg); padding: 20px; margin: 20px 0; width: 100%; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  .roulette-result-title { font-size: 18px; font-weight: 800; color: var(--gray900); margin-bottom: 8px; }
+
+  /* ── Health page ── */
+  .health-ring-row { display: flex; justify-content: center; padding: 16px 20px; }
+  .health-ring { width: 160px; height: 160px; position: relative; }
+  .health-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .health-ring-cal { font-size: 26px; font-weight: 800; color: var(--gray900); }
+  .health-ring-label { font-size: 11px; color: var(--gray500); }
+  .health-macros { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 0 20px 16px; }
+  .macro-cell { background: var(--white); border-radius: var(--radius-md); padding: 12px; text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .macro-val { font-size: 18px; font-weight: 800; }
+  .macro-label { font-size: 11px; color: var(--gray500); margin-top: 2px; }
+  .chart-bar-wrap { padding: 0 20px 20px; }
+  .chart-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .chart-bar-label { font-size: 12px; color: var(--gray500); width: 30px; text-align: right; }
+  .chart-bar-bg { flex: 1; height: 10px; background: var(--gray200); border-radius: 5px; overflow: hidden; }
+  .chart-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+  .chart-bar-num { font-size: 11px; color: var(--gray700); font-weight: 600; width: 40px; }
+
+  /* ── Meal plan ── */
+  .day-selector { display: flex; gap: 6px; padding: 8px 20px 16px; overflow-x: auto; scrollbar-width: none; }
+  .day-selector::-webkit-scrollbar { display: none; }
+  .day-btn { display: flex; flex-direction: column; align-items: center; padding: 8px 14px; border-radius: var(--radius-sm); background: var(--white); cursor: pointer; border: 1.5px solid transparent; box-shadow: 0 1px 4px rgba(0,0,0,.07); transition: all .15s; white-space: nowrap; }
+  .day-btn.active { background: var(--green6); border-color: var(--green6); }
+  .day-short { font-size: 10px; font-weight: 700; color: var(--gray500); }
+  .day-btn.active .day-short { color: rgba(255,255,255,.8); }
+  .day-num { font-size: 18px; font-weight: 800; color: var(--gray900); }
+  .day-btn.active .day-num { color: #fff; }
+  .meal-slot { background: var(--white); border-radius: var(--radius-md); margin: 0 20px 10px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
+  .meal-slot-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+  .meal-type-badge { font-size: 11px; font-weight: 800; color: var(--gray700); background: var(--gray100); padding: 3px 10px; border-radius: 10px; }
+  .meal-kcal { font-size: 12px; color: var(--gray500); margin-left: auto; }
+  .meal-recipe-row { display: flex; align-items: center; gap: 10px; padding: 0 16px 12px; }
+  .meal-recipe-img { width: 52px; height: 52px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .meal-recipe-name { font-size: 13px; font-weight: 700; color: var(--gray900); }
+  .meal-recipe-time { font-size: 11px; color: var(--gray500); margin-top: 2px; }
+
+  /* ── Pro page ── */
+  .pro-header { text-align: center; padding: 28px 20px 16px; }
+  .pro-badge { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 800; margin-bottom: 12px; }
+  .pro-title { font-size: 24px; font-weight: 800; color: var(--gray900); margin-bottom: 8px; }
+  .pro-desc { font-size: 14px; color: var(--gray500); line-height: 1.5; }
+  .pro-features { padding: 0 20px; }
+  .pro-feature-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; background: var(--white); border-radius: var(--radius-md); margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .pro-feature-icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+  .pro-feature-title { font-size: 15px; font-weight: 700; color: var(--gray900); }
+  .pro-feature-desc { font-size: 12px; color: var(--gray500); margin-top: 2px; line-height: 1.4; }
+  .pro-cta { margin: 20px; }
+  .pro-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #16A34A, #15803D); border: none; border-radius: var(--radius-md); color: #fff; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 24px rgba(22,163,74,.35); letter-spacing: .2px; transition: transform .1s; }
+  .pro-btn:hover { transform: translateY(-1px); }
+
+  /* ── Auth ── */
+  .auth-wrap { display: flex; flex-direction: column; align-items: center; padding: 60px 28px 20px; }
+  .auth-logo { margin-bottom: 24px; }
+  .auth-title { font-size: 26px; font-weight: 800; color: var(--gray900); text-align: center; margin-bottom: 6px; }
+  .auth-sub { font-size: 14px; color: var(--gray500); text-align: center; margin-bottom: 32px; line-height: 1.5; }
+  .auth-input-wrap { width: 100%; margin-bottom: 12px; }
+  .auth-input { width: 100%; padding: 14px 16px; background: var(--white); border: 1.5px solid var(--gray200); border-radius: var(--radius-sm); font-size: 15px; color: var(--gray900); outline: none; transition: border-color .2s; }
+  .auth-input:focus { border-color: var(--green6); }
+  .auth-btn { width: 100%; padding: 15px; background: var(--green6); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 4px; box-shadow: 0 4px 16px rgba(22,163,74,.35); transition: transform .1s; }
+  .auth-btn:hover { transform: translateY(-1px); }
+  .auth-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; width: 100%; }
+  .auth-divider-line { flex: 1; height: 1px; background: var(--gray200); }
+  .auth-divider-text { font-size: 12px; color: var(--gray400); }
+
+  /* ── Sidebar label ── */
+  .page-label { font-size: 14px; font-weight: 600; color: #888; text-align: center; margin-top: 8px; }
+
+  /* ── Transitions ── */
+  .slide-in { animation: slideIn .3s ease; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* ── PRO tag ── */
+  .vegan-pill { display: inline-flex; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 800; }
+
+  /* ── Scrollbar ── */
+  .screen { scrollbar-width: none; }
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+  <div class="phone-inner">
+    <div class="screens" id="screens">
+
+      <!-- ══════════════════════════════════════════════ SCREEN 0: FEED ══ -->
+      <div class="screen" id="screen-feed">
+        <div class="status-bar"><span>9:41</span><div class="status-bar-right">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="#111"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+          <svg width="16" height="12" viewBox="0 0 24 18" fill="#111"><path d="M12 3C7.03 3 2.6 5.04.15 8.27L2 10.5C4.02 7.82 7.8 6 12 6s7.98 1.82 10 4.5l1.85-2.23C21.4 5.04 16.97 3 12 3z"/><path d="M12 9c-2.97 0-5.6 1.3-7.42 3.37L6.5 14.7A7.95 7.95 0 0112 12c2.13 0 4.07.84 5.5 2.7l1.92-2.33A10.94 10.94 0 0012 9z"/><circle cx="12" cy="18" r="2"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="#111" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="18" height="9" rx="2.5" fill="#111"/><path d="M23 4v4a2 2 0 000-4z" fill="#111" fill-opacity=".4"/></svg>
+        </div></div>
+
+        <div class="feed-top">
+          <div>
+            <div style="font-size:13px;color:var(--gray500);font-weight:500;">Доброе утро,</div>
+            <h1>Настя 👋</h1>
+          </div>
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--green1);border:2px solid var(--green6);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="goScreen(4)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#16A34A" stroke-width="1.8"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <div class="search-wrap">
+          <div class="search-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9CA3AF" stroke-width="1.8"/><path d="M16.5 16.5l4 4" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input class="search-input" placeholder="Найти рецепт...">
+          </div>
+        </div>
+
+        <!-- Category chips -->
+        <div class="chips-scroll">
+          <div class="chip active"><span>🌱</span> Все</div>
+          <div class="chip"><span>🍳</span> Завтраки</div>
+          <div class="chip"><span>🥗</span> Салаты</div>
+          <div class="chip"><span>🥣</span> Супы</div>
+          <div class="chip"><span>🍲</span> Вторые</div>
+          <div class="chip"><span>🍰</span> Сладости</div>
+          <div class="chip"><span>🥤</span> Напитки</div>
+        </div>
+
+        <!-- Hero card -->
+        <div class="section-header"><h2>Рецепт дня</h2></div>
+        <div class="hero-card" onclick="goScreen(1)">
+          <div class="hero-placeholder" style="background:linear-gradient(135deg,#1e3a1e 0%,#166534 100%);">
+            <svg width="100%" height="260" viewBox="0 0 390 260" xmlns="http://www.w3.org/2000/svg">
+              <rect fill="#1a2e1a" width="390" height="260"/>
+              <line x1="0" y1="0" x2="390" y2="260" stroke="#2d4a2d" stroke-width="1.5"/>
+              <line x1="130" y1="0" x2="390" y2="195" stroke="#2d4a2d" stroke-width="1.5"/>
+              <line x1="260" y1="0" x2="390" y2="97.5" stroke="#2d4a2d" stroke-width="1.5"/>
+              <line x1="0" y1="86" x2="390" y2="86" stroke="#2d4a2d" stroke-width="1"/>
+              <line x1="0" y1="173" x2="390" y2="173" stroke="#2d4a2d" stroke-width="1"/>
+              <!-- Bowl -->
+              <ellipse cx="195" cy="150" rx="70" ry="25" fill="none" stroke="#4ade80" stroke-width="2" opacity=".6"/>
+              <path d="M125 150 Q195 200 265 150" fill="none" stroke="#4ade80" stroke-width="2" opacity=".6"/>
+              <ellipse cx="195" cy="125" rx="45" ry="18" fill="#166534" opacity=".8"/>
+              <!-- Greens -->
+              <circle cx="175" cy="118" r="8" fill="#22c55e" opacity=".7"/>
+              <circle cx="195" cy="115" r="10" fill="#16a34a" opacity=".8"/>
+              <circle cx="215" cy="119" r="7" fill="#15803d" opacity=".7"/>
+              <circle cx="185" cy="108" r="6" fill="#4ade80" opacity=".6"/>
+              <circle cx="205" cy="107" r="5" fill="#86efac" opacity=".5"/>
+              <!-- Label -->
+              <text x="195" y="222" text-anchor="middle" fill="#4ade80" font-family="monospace" font-size="11" opacity=".7">img_0001</text>
+            </svg>
+          </div>
+          <div class="hero-overlay"></div>
+          <div class="hero-accent-strip" style="background:#16A34A;"></div>
+          <div style="position:absolute;top:12px;left:12px;background:#16A34A;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;">Завтраки</div>
+          <div class="hero-info">
+            <div class="hero-title">Овсяная каша с яблоком и ванилью</div>
+            <div class="hero-meta">
+              <div class="hero-meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                13 мин
+              </div>
+              <div class="hero-meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg>
+                4.6
+              </div>
+              <div style="margin-left:auto;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;color:#fff;">Веган</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Popular section -->
+        <div class="section-header"><h2>Популярные</h2><span class="see-all">Все →</span></div>
+        <div class="cards-grid">
+          <!-- Card 1 -->
+          <div class="v-card" onclick="goScreen(1)">
+            <div class="v-card-img">
+              <svg width="100%" height="130" viewBox="0 0 175 130" xmlns="http://www.w3.org/2000/svg">
+                <rect fill="#1a1e3a" width="175" height="130"/>
+                <line x1="0" y1="0" x2="175" y2="130" stroke="#2d3a5c" stroke-width="1.2"/>
+                <line x1="87" y1="0" x2="175" y2="97" stroke="#2d3a5c" stroke-width="1.2"/>
+                <line x1="0" y1="43" x2="175" y2="43" stroke="#2d3a5c" stroke-width=".8"/>
+                <line x1="0" y1="87" x2="175" y2="87" stroke="#2d3a5c" stroke-width=".8"/>
+                <ellipse cx="87" cy="70" rx="38" ry="16" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity=".5"/>
+                <path d="M49 70 Q87 95 125 70" fill="none" stroke="#60a5fa" stroke-width="1.5" opacity=".5"/>
+                <circle cx="75" cy="62" r="6" fill="#3b82f6" opacity=".7"/>
+                <circle cx="87" cy="59" r="8" fill="#2563eb" opacity=".8"/>
+                <circle cx="99" cy="63" r="5" fill="#1d4ed8" opacity=".7"/>
+                <text x="87" y="115" text-anchor="middle" fill="#60a5fa" font-family="monospace" font-size="9" opacity=".6">img_0004</text>
+              </svg>
+            </div>
+            <div class="v-card-bar" style="background:#3B82F6;"></div>
+            <div class="v-card-body">
+              <div class="v-cat-row"><div class="v-cat-dot" style="background:#3B82F6;"></div><span class="v-cat-text" style="color:#3B82F6;">Супы</span></div>
+              <div class="v-card-title">Крем-суп из брокколи</div>
+              <div class="v-card-footer"><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 25м</div><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.8</div></div>
+            </div>
+          </div>
+          <!-- Card 2 -->
+          <div class="v-card" onclick="goScreen(1)">
+            <div class="v-card-img">
+              <svg width="100%" height="130" viewBox="0 0 175 130" xmlns="http://www.w3.org/2000/svg">
+                <rect fill="#3a1a1e" width="175" height="130"/>
+                <line x1="0" y1="0" x2="175" y2="130" stroke="#5c2d38" stroke-width="1.2"/>
+                <line x1="0" y1="43" x2="175" y2="43" stroke="#5c2d38" stroke-width=".8"/>
+                <line x1="0" y1="87" x2="175" y2="87" stroke="#5c2d38" stroke-width=".8"/>
+                <rect x="50" y="50" width="75" height="45" rx="6" fill="none" stroke="#f87171" stroke-width="1.5" opacity=".5"/>
+                <circle cx="75" cy="62" r="6" fill="#ef4444" opacity=".7"/>
+                <circle cx="87" cy="59" r="8" fill="#dc2626" opacity=".8"/>
+                <circle cx="99" cy="63" r="5" fill="#b91c1c" opacity=".7"/>
+                <text x="87" y="115" text-anchor="middle" fill="#f87171" font-family="monospace" font-size="9" opacity=".6">img_0023</text>
+              </svg>
+            </div>
+            <div class="v-card-bar" style="background:#EF4444;"></div>
+            <div class="v-card-body">
+              <div class="v-cat-row"><div class="v-cat-dot" style="background:#EF4444;"></div><span class="v-cat-text" style="color:#EF4444;">Сладости</span></div>
+              <div class="v-card-title">Шоколадный торт без выпечки</div>
+              <div class="v-card-footer"><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 40м</div><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.9</div></div>
+            </div>
+          </div>
+          <!-- Card 3 -->
+          <div class="v-card" onclick="goScreen(1)">
+            <div class="v-card-img">
+              <svg width="100%" height="130" viewBox="0 0 175 130" xmlns="http://www.w3.org/2000/svg">
+                <rect fill="#1e3a1a" width="175" height="130"/>
+                <line x1="0" y1="0" x2="175" y2="130" stroke="#2d5c2a" stroke-width="1.2"/>
+                <line x1="0" y1="43" x2="175" y2="43" stroke="#2d5c2a" stroke-width=".8"/>
+                <line x1="0" y1="87" x2="175" y2="87" stroke="#2d5c2a" stroke-width=".8"/>
+                <ellipse cx="87" cy="68" rx="40" ry="22" fill="none" stroke="#4ade80" stroke-width="1.5" opacity=".5"/>
+                <circle cx="72" cy="60" r="7" fill="#22c55e" opacity=".7"/>
+                <circle cx="87" cy="58" r="9" fill="#16a34a" opacity=".8"/>
+                <circle cx="100" cy="61" r="6" fill="#15803d" opacity=".7"/>
+                <text x="87" y="115" text-anchor="middle" fill="#4ade80" font-family="monospace" font-size="9" opacity=".6">img_0056</text>
+              </svg>
+            </div>
+            <div class="v-card-bar" style="background:#16A34A;"></div>
+            <div class="v-card-body">
+              <div class="v-cat-row"><div class="v-cat-dot" style="background:#16A34A;"></div><span class="v-cat-text" style="color:#16A34A;">Салаты</span></div>
+              <div class="v-card-title">Греческий салат с тофу</div>
+              <div class="v-card-footer"><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 15м</div><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.7</div></div>
+            </div>
+          </div>
+          <!-- Card 4 -->
+          <div class="v-card" onclick="goScreen(1)">
+            <div class="v-card-img">
+              <svg width="100%" height="130" viewBox="0 0 175 130" xmlns="http://www.w3.org/2000/svg">
+                <rect fill="#1a2e3a" width="175" height="130"/>
+                <line x1="0" y1="0" x2="175" y2="130" stroke="#2d4a5c" stroke-width="1.2"/>
+                <line x1="0" y1="43" x2="175" y2="43" stroke="#2d4a5c" stroke-width=".8"/>
+                <line x1="0" y1="87" x2="175" y2="87" stroke="#2d4a5c" stroke-width=".8"/>
+                <rect x="52" y="48" width="71" height="48" rx="4" fill="none" stroke="#38bdf8" stroke-width="1.5" opacity=".5"/>
+                <circle cx="72" cy="62" r="6" fill="#0ea5e9" opacity=".7"/>
+                <circle cx="87" cy="60" r="8" fill="#0284c7" opacity=".8"/>
+                <circle cx="100" cy="63" r="5" fill="#0369a1" opacity=".7"/>
+                <text x="87" y="115" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-size="9" opacity=".6">img_0089</text>
+              </svg>
+            </div>
+            <div class="v-card-bar" style="background:#0EA5E9;"></div>
+            <div class="v-card-body">
+              <div class="v-cat-row"><div class="v-cat-dot" style="background:#0EA5E9;"></div><span class="v-cat-text" style="color:#0EA5E9;">Напитки</span></div>
+              <div class="v-card-title">Смузи манго–шпинат</div>
+              <div class="v-card-footer"><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 5м</div><div class="v-meta"><svg width="10" height="10" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.5</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New section: horizontal -->
+        <div class="section-header" style="margin-top:8px;"><h2>Новинки</h2><span class="see-all">Все →</span></div>
+        <div class="h-card" onclick="goScreen(1)">
+          <div class="h-strip" style="background:#F59E0B;"></div>
+          <div class="h-img">
+            <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+              <rect fill="#3a2e1a" width="90" height="90"/>
+              <line x1="0" y1="0" x2="90" y2="90" stroke="#5c4a2d" stroke-width="1"/>
+              <ellipse cx="45" cy="55" rx="26" ry="14" fill="none" stroke="#fbbf24" stroke-width="1.2" opacity=".5"/>
+              <circle cx="37" cy="47" r="6" fill="#f59e0b" opacity=".7"/>
+              <circle cx="45" cy="44" r="8" fill="#d97706" opacity=".8"/>
+              <circle cx="53" cy="47" r="5" fill="#b45309" opacity=".7"/>
+              <text x="45" y="82" text-anchor="middle" fill="#fbbf24" font-family="monospace" font-size="8" opacity=".6">img_0142</text>
+            </svg>
+          </div>
+          <div class="h-body">
+            <div class="h-cat-pill" style="background:#FEF3C7;color:#B45309;">🧆 Закуски</div>
+            <div class="h-title">Фалафель с хумусом и питой</div>
+            <div class="h-meta">
+              <div class="h-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 35 мин</div>
+              <div class="h-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.8</div>
+            </div>
+          </div>
+        </div>
+        <div class="h-card" onclick="goScreen(1)">
+          <div class="h-strip" style="background:#8B5CF6;"></div>
+          <div class="h-img">
+            <svg width="90" height="90" viewBox="0 0 90 90" xmlns="http://www.w3.org/2000/svg">
+              <rect fill="#1e1a3a" width="90" height="90"/>
+              <line x1="0" y1="0" x2="90" y2="90" stroke="#2d2a5c" stroke-width="1"/>
+              <line x1="0" y1="30" x2="90" y2="30" stroke="#2d2a5c" stroke-width=".7"/>
+              <rect x="24" y="32" width="42" height="30" rx="4" fill="none" stroke="#a78bfa" stroke-width="1.2" opacity=".5"/>
+              <circle cx="37" cy="46" r="5" fill="#8b5cf6" opacity=".7"/>
+              <circle cx="45" cy="44" r="7" fill="#7c3aed" opacity=".8"/>
+              <circle cx="53" cy="47" r="4" fill="#6d28d9" opacity=".7"/>
+              <text x="45" y="82" text-anchor="middle" fill="#a78bfa" font-family="monospace" font-size="8" opacity=".6">img_0211</text>
+            </svg>
+          </div>
+          <div class="h-body">
+            <div class="h-cat-pill" style="background:#F3F0FF;color:#6D28D9;">🍞 Выпечка</div>
+            <div class="h-title">Ржаной хлеб на закваске</div>
+            <div class="h-meta">
+              <div class="h-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#9CA3AF" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/></svg> 3 ч</div>
+              <div class="h-meta-item"><svg width="11" height="11" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.9</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 1: RECIPE DETAIL ══ -->
+      <div class="screen" id="screen-detail">
+        <div class="detail-hero">
+          <svg width="390" height="340" viewBox="0 0 390 340" xmlns="http://www.w3.org/2000/svg">
+            <rect fill="#1a2e1a" width="390" height="340"/>
+            <line x1="0" y1="0" x2="390" y2="340" stroke="#2d4a2d" stroke-width="2"/>
+            <line x1="130" y1="0" x2="390" y2="255" stroke="#2d4a2d" stroke-width="1.5"/>
+            <line x1="260" y1="0" x2="390" y2="127" stroke="#2d4a2d" stroke-width="1.5"/>
+            <line x1="0" y1="113" x2="390" y2="113" stroke="#2d4a2d" stroke-width="1"/>
+            <line x1="0" y1="227" x2="390" y2="227" stroke="#2d4a2d" stroke-width="1"/>
+            <ellipse cx="195" cy="190" rx="85" ry="32" fill="none" stroke="#4ade80" stroke-width="2" opacity=".5"/>
+            <path d="M110 190 Q195 250 280 190" fill="none" stroke="#4ade80" stroke-width="2" opacity=".5"/>
+            <ellipse cx="195" cy="162" rx="58" ry="24" fill="#166534" opacity=".8"/>
+            <circle cx="168" cy="152" r="11" fill="#22c55e" opacity=".7"/>
+            <circle cx="191" cy="148" r="14" fill="#16a34a" opacity=".8"/>
+            <circle cx="218" cy="153" r="10" fill="#15803d" opacity=".7"/>
+            <circle cx="178" cy="138" r="8" fill="#4ade80" opacity=".6"/>
+            <circle cx="206" cy="137" r="7" fill="#86efac" opacity=".5"/>
+            <text x="195" y="300" text-anchor="middle" fill="#4ade80" font-family="monospace" font-size="13" opacity=".6">img_0001</text>
+          </svg>
+          <div class="detail-hero-overlay"></div>
+          <div class="detail-hero-strip" style="background:#16A34A;"></div>
+          <!-- Nav -->
+          <div class="detail-hero-nav" style="top:64px;">
+            <button class="detail-back-btn" onclick="goScreen(0)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7-7M5 12l7 7" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="detail-share-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+          <div style="position:absolute;bottom:28px;left:20px;right:80px;">
+            <div class="detail-hero-badge" style="background:#16A34A;position:static;display:inline-flex;margin-bottom:6px;">🌱 Завтраки · Веган</div>
+            <div style="font-size:22px;font-weight:800;color:#fff;line-height:1.3;">Овсяная каша с яблоком и ванилью</div>
+          </div>
+        </div>
+
+        <div class="detail-card">
+          <!-- Meta chips -->
+          <div class="detail-meta-row">
+            <div class="detail-meta-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#374151" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#374151" stroke-width="1.8" stroke-linecap="round"/></svg> 13 мин</div>
+            <div class="detail-meta-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24"><path d="M12 2l2.9 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l7.1-1.01L12 2z"/></svg> 4.6 · 1.2к отзывов</div>
+            <div class="detail-meta-chip">👤 1 порция</div>
+            <div class="detail-meta-chip">😊 Легко</div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="detail-tabs" id="detail-tabs">
+            <button class="detail-tab active" onclick="switchTab(0,'#16A34A')">Шаги</button>
+            <button class="detail-tab" onclick="switchTab(1,'#16A34A')">Ингредиенты</button>
+            <button class="detail-tab" onclick="switchTab(2,'#16A34A')">КБЖУ</button>
+            <button class="detail-tab" onclick="switchTab(3,'#16A34A')">AI</button>
+          </div>
+
+          <!-- Tab content -->
+          <div id="tab-content">
+            <!-- Steps -->
+            <div id="tab-0">
+              <div class="step-row">
+                <div class="step-num" style="background:#16A34A;">1</div>
+                <div class="step-text">Смешайте <strong>овсяные хлопья</strong> с миндальным молоком и доведите до тихого кипения, затем уменьшите нагрев.</div>
+              </div>
+              <div class="step-row">
+                <div class="step-num" style="background:#16A34A;">2</div>
+                <div class="step-text">Добавьте <strong>ваниль</strong> и половину порции яблока, перемешайте до кремовой текстуры.</div>
+              </div>
+              <div class="step-row">
+                <div class="step-num" style="background:#16A34A;">3</div>
+                <div class="step-text">Переложите в тарелку, добавьте оставшееся яблоко и кокосовую стружку сверху.</div>
+              </div>
+            </div>
+            <!-- Ingredients -->
+            <div id="tab-1" style="display:none;">
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Овсяные хлопья</div><div class="ing-amount" style="color:#166534;">60 г</div></div>
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Миндальное молоко</div><div class="ing-amount" style="color:#166534;">220 мл</div></div>
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Яблоко</div><div class="ing-amount" style="color:#166534;">90 г</div></div>
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Мёд</div><div class="ing-amount" style="color:#166534;">10 г</div></div>
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Кокосовая стружка</div><div class="ing-amount" style="color:#166534;">12 г</div></div>
+              <div class="ing-row"><div class="ing-name"><div class="ing-dot" style="background:#16A34A;"></div>Ваниль</div><div class="ing-amount" style="color:#166534;">1 щепотка</div></div>
+            </div>
+            <!-- Nutrition -->
+            <div id="tab-2" style="display:none;">
+              <div class="nutr-grid">
+                <div class="nutr-cell" style="background:#DCFCE7;"><div class="nutr-val" style="color:#15803D;">342</div><div class="nutr-label">ккал</div></div>
+                <div class="nutr-cell" style="background:#DCFCE7;"><div class="nutr-val" style="color:#15803D;">9.2г</div><div class="nutr-label">белки</div></div>
+                <div class="nutr-cell" style="background:#DCFCE7;"><div class="nutr-val" style="color:#15803D;">7.8г</div><div class="nutr-label">жиры</div></div>
+                <div class="nutr-cell" style="background:#DCFCE7;"><div class="nutr-val" style="color:#15803D;">58г</div><div class="nutr-label">углеводы</div></div>
+              </div>
+            </div>
+            <!-- AI -->
+            <div id="tab-3" style="display:none;">
+              <div style="background:#F0FDF4;border-radius:16px;padding:16px;border-left:3px solid #16A34A;">
+                <div style="font-size:13px;font-weight:700;color:#15803D;margin-bottom:8px;">🤖 VegAI анализ</div>
+                <div style="font-size:13px;color:#374151;line-height:1.6;">Это блюдо отлично подходит для завтрака: медленные углеводы из овса обеспечат энергию на 3–4 часа. Яблоко добавляет клетчатку и витамин C. Рекомендую есть в первой половине дня.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 2: ROULETTE ══ -->
+      <div class="screen" id="screen-roulette">
+        <div class="status-bar"><span>9:41</span><div class="status-bar-right">
+          <svg width="17" height="12" viewBox="0 0 17 12" fill="#111"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="#111" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="18" height="9" rx="2.5" fill="#111"/><path d="M23 4v4a2 2 0 000-4z" fill="#111" fill-opacity=".4"/></svg>
+        </div></div>
+        <div class="feed-top" style="padding-bottom:12px;"><h1>Рулетка</h1></div>
+
+        <div class="roulette-wrap">
+          <div style="font-size:14px;color:var(--gray500);text-align:center;margin-bottom:20px;line-height:1.5;">Не знаете что приготовить?<br>Пусть случай решит за вас!</div>
+
+          <div class="roulette-wheel" id="roulette-wheel" onclick="spinRoulette()">
+            <svg width="240" height="240" viewBox="0 0 240 240">
+              <circle cx="120" cy="120" r="118" fill="#f0fdf4" stroke="#16A34A" stroke-width="4"/>
+              <path d="M120 120 L120 2 A118 118 0 0 1 222 59 Z" fill="#dcfce7"/>
+              <path d="M120 120 L222 59 A118 118 0 0 1 238 181 Z" fill="#bbf7d0"/>
+              <path d="M120 120 L238 181 A118 118 0 0 1 120 238 Z" fill="#86efac"/>
+              <path d="M120 120 L120 238 A118 118 0 0 1 2 181 Z" fill="#4ade80"/>
+              <path d="M120 120 L2 181 A118 118 0 0 1 18 59 Z" fill="#22c55e"/>
+              <path d="M120 120 L18 59 A118 118 0 0 1 120 2 Z" fill="#16a34a"/>
+              <circle cx="120" cy="120" r="32" fill="white" stroke="#16A34A" stroke-width="3"/>
+              <text x="120" y="115" text-anchor="middle" fill="#16A34A" font-size="11" font-weight="800" font-family="-apple-system,sans-serif">КРУТИТЬ</text>
+              <text x="120" y="130" text-anchor="middle" fill="#16A34A" font-size="11" font-weight="800" font-family="-apple-system,sans-serif">!</text>
+            </svg>
+          </div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:20px;">
+            <div class="chip active">Все категории</div>
+            <div class="chip">Веган</div>
+            <div class="chip">До 30 мин</div>
+            <div class="chip">Лёгкие</div>
+          </div>
+
+          <button class="roulette-btn" onclick="spinRoulette()">Случайный рецепт</button>
+
+          <div class="roulette-result" id="roulette-result" style="display:none;">
+            <div style="font-size:11px;color:var(--green6);font-weight:700;margin-bottom:6px;">🎲 Ваш рецепт</div>
+            <div class="roulette-result-title" id="roulette-title">Крем-суп из брокколи</div>
+            <div style="font-size:13px;color:var(--gray500);margin-bottom:14px;">Супы · 25 мин · Веган</div>
+            <button style="width:100%;padding:12px;background:var(--green6);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;" onclick="goScreen(1)">Открыть рецепт →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 3: HEALTH ══ -->
+      <div class="screen" id="screen-health">
+        <div class="status-bar"><span>9:41</span><div class="status-bar-right">
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="#111" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="18" height="9" rx="2.5" fill="#111"/><path d="M23 4v4a2 2 0 000-4z" fill="#111" fill-opacity=".4"/></svg>
+        </div></div>
+        <div class="feed-top" style="padding-bottom:4px;"><h1>Здоровье</h1></div>
+
+        <div style="padding:12px 20px;display:flex;gap:10px;">
+          <div style="flex:1;background:var(--white);border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+            <div style="font-size:22px;font-weight:800;color:var(--green6);">7</div>
+            <div style="font-size:11px;color:var(--gray500);">дней подряд</div>
+          </div>
+          <div style="flex:1;background:var(--white);border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+            <div style="font-size:22px;font-weight:800;color:#F59E0B;">1820</div>
+            <div style="font-size:11px;color:var(--gray500);">ккал сегодня</div>
+          </div>
+          <div style="flex:1;background:var(--white);border-radius:14px;padding:14px;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+            <div style="font-size:22px;font-weight:800;color:#3B82F6;">2000</div>
+            <div style="font-size:11px;color:var(--gray500);">ккал цель</div>
+          </div>
+        </div>
+
+        <!-- Ring chart -->
+        <div style="padding:0 20px 8px;">
+          <div style="background:var(--white);border-radius:var(--radius-lg);padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+            <div style="font-size:16px;font-weight:800;margin-bottom:16px;">КБЖУ за сегодня</div>
+            <div style="display:flex;align-items:center;gap:20px;">
+              <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="12"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#16A34A" stroke-width="12" stroke-dasharray="126 125" stroke-dashoffset="32" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#F59E0B" stroke-width="12" stroke-dasharray="56 196" stroke-dashoffset="-94" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#3B82F6" stroke-width="12" stroke-dasharray="70 182" stroke-dashoffset="-150" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+                <text x="50" y="46" text-anchor="middle" fill="#111827" font-size="14" font-weight="800" font-family="-apple-system,sans-serif">1820</text>
+                <text x="50" y="58" text-anchor="middle" fill="#9CA3AF" font-size="8" font-family="-apple-system,sans-serif">ккал</text>
+              </svg>
+              <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#16A34A;"></div><span style="font-size:13px;color:var(--gray700);flex:1;">Белки</span><span style="font-size:14px;font-weight:700;color:#15803D;">72г</span></div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#F59E0B;"></div><span style="font-size:13px;color:var(--gray700);flex:1;">Жиры</span><span style="font-size:14px;font-weight:700;color:#D97706;">45г</span></div>
+                <div style="display:flex;align-items:center;gap:8px;"><div style="width:10px;height:10px;border-radius:50%;background:#3B82F6;"></div><span style="font-size:13px;color:var(--gray700);flex:1;">Углеводы</span><span style="font-size:14px;font-weight:700;color:#2563EB;">218г</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly chart -->
+        <div class="section-header"><h2>Неделя</h2></div>
+        <div class="chart-bar-wrap">
+          <div style="background:var(--white);border-radius:var(--radius-lg);padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+            <div style="display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px;">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:39px;"></div><div style="font-size:9px;color:var(--gray400);">Пн</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:48px;"></div><div style="font-size:9px;color:var(--gray400);">Вт</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:33px;"></div><div style="font-size:9px;color:var(--gray400);">Ср</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:54px;"></div><div style="font-size:9px;color:var(--gray400);">Чт</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:42px;"></div><div style="font-size:9px;color:var(--gray400);">Пт</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#86EFAC;border-radius:4px 4px 0 0;height:27px;"></div><div style="font-size:9px;color:var(--gray400);">Сб</div></div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;"><div style="width:100%;background:#16A34A;border-radius:4px 4px 0 0;height:43px;"></div><div style="font-size:9px;color:var(--green6);font-weight:700;">Вс</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 4: PROFILE ══ -->
+      <div class="screen" id="screen-profile">
+        <div class="status-bar"><span>9:41</span></div>
+        <div class="profile-header">
+          <div class="avatar-ring">🌿</div>
+          <div class="profile-name">Настя Иванова</div>
+          <div class="profile-sub">Веган · С нами с 2024</div>
+          <div class="stats-row">
+            <div class="stat-item"><div class="stat-num">47</div><div class="stat-label">рецептов</div></div>
+            <div class="stat-item"><div class="stat-num">12</div><div class="stat-label">подписчиков</div></div>
+            <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">дней подряд</div></div>
+          </div>
+          <button style="background:var(--green1);color:var(--green6);border:1.5px solid var(--green6);border-radius:20px;padding:8px 24px;font-size:14px;font-weight:700;cursor:pointer;">Редактировать</button>
+        </div>
+        <div class="settings-list">
+          <div class="settings-item" onclick="goScreen(5)">
+            <div class="settings-icon" style="background:#FFF7ED;color:#F59E0B;">PRO</div>
+            <div class="settings-label">VegRecipes PRO</div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" class="settings-chevron"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon" style="background:#F0FFF4;color:#22C55E;">AI</div>
+            <div class="settings-label">Сканер холодильника</div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" class="settings-chevron"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon" style="background:#EFF6FF;color:#3B82F6;">7д</div>
+            <div class="settings-label">Недельное меню</div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" class="settings-chevron"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="settings-item" onclick="goScreen(3)">
+            <div class="settings-icon" style="background:#F0FDFA;color:#14B8A6;">ЗД</div>
+            <div class="settings-label">Дневник здоровья</div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" class="settings-chevron"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div style="height:1px;background:var(--gray200);margin:8px 0;"></div>
+          <div class="settings-item">
+            <div class="settings-icon" style="background:var(--gray100);color:var(--gray500);">⚙</div>
+            <div class="settings-label">Настройки</div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" class="settings-chevron"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="settings-item">
+            <div class="settings-icon" style="background:#FFF5F5;color:#EF4444;">→</div>
+            <div class="settings-label" style="color:#EF4444;">Выйти</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 5: PRO ══ -->
+      <div class="screen" id="screen-pro">
+        <div class="status-bar"><span>9:41</span></div>
+        <div style="padding:16px 20px 4px;display:flex;align-items:center;gap:12px;">
+          <button onclick="goScreen(4)" style="width:36px;height:36px;border-radius:50%;background:var(--gray100);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12l7-7M5 12l7 7" stroke="#374151" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <h2>VegRecipes PRO</h2>
+        </div>
+        <div class="pro-header">
+          <div class="pro-badge">⭐ PRO</div>
+          <div class="pro-title">Разблокируйте всё</div>
+          <div class="pro-desc">Генерация меню на неделю, AI-анализ, сканер холодильника и многое другое</div>
+        </div>
+        <div class="pro-features">
+          <div class="pro-feature-row">
+            <div class="pro-feature-icon" style="background:#FFF7ED;color:#F59E0B;">AI</div>
+            <div><div class="pro-feature-title">AI-сканер холодильника</div><div class="pro-feature-desc">Сфотографируйте продукты — получите рецепты из того, что есть</div></div>
+          </div>
+          <div class="pro-feature-row">
+            <div class="pro-feature-icon" style="background:#EFF6FF;color:#3B82F6;">7д</div>
+            <div><div class="pro-feature-title">Меню на неделю</div><div class="pro-feature-desc">Автоматический расчёт КБЖУ, список покупок в один клик</div></div>
+          </div>
+          <div class="pro-feature-row">
+            <div class="pro-feature-icon" style="background:#F0FDF4;color:#16A34A;">AR</div>
+            <div><div class="pro-feature-title">AR-режим готовки</div><div class="pro-feature-desc">Пошаговые инструкции прямо перед глазами, голосовое управление</div></div>
+          </div>
+          <div class="pro-feature-row">
+            <div class="pro-feature-icon" style="background:#FDF4FF;color:#9333EA;">∞</div>
+            <div><div class="pro-feature-title">Без ограничений</div><div class="pro-feature-desc">Все 1000+ рецептов, офлайн-режим, экспорт в PDF</div></div>
+          </div>
+        </div>
+        <div class="pro-cta">
+          <div style="text-align:center;margin-bottom:12px;">
+            <div style="font-size:28px;font-weight:800;color:var(--gray900);">299 ₽/мес</div>
+            <div style="font-size:13px;color:var(--gray500);">или 2 490 ₽/год — экономия 40%</div>
+          </div>
+          <button class="pro-btn">Попробовать бесплатно 7 дней</button>
+          <div style="text-align:center;margin-top:10px;font-size:12px;color:var(--gray400);">Отмена в любой момент</div>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════ SCREEN 6: MEAL PLAN ══ -->
+      <div class="screen" id="screen-meal">
+        <div class="status-bar"><span>9:41</span><div class="status-bar-right">
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none"><rect x=".5" y=".5" width="22" height="11" rx="3.5" stroke="#111" stroke-opacity=".35"/><rect x="1.5" y="1.5" width="18" height="9" rx="2.5" fill="#111"/></svg>
+        </div></div>
+
+        <div class="feed-top" style="padding-bottom:4px;">
+          <h1>Меню на неделю</h1>
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--green1);display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="goScreen(5)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Day selector -->
+        <div class="day-selector">
+          <div class="day-btn active"><div class="day-short">ПН</div><div class="day-num">5</div></div>
+          <div class="day-btn"><div class="day-short">ВТ</div><div class="day-num">6</div></div>
+          <div class="day-btn"><div class="day-short">СР</div><div class="day-num">7</div></div>
+          <div class="day-btn"><div class="day-short">ЧТ</div><div class="day-num">8</div></div>
+          <div class="day-btn"><div class="day-short">ПТ</div><div class="day-num">9</div></div>
+          <div class="day-btn"><div class="day-short">СБ</div><div class="day-num">10</div></div>
+          <div class="day-btn"><div class="day-short">ВС</div><div class="day-num">11</div></div>
+        </div>
+
+        <!-- Calorie progress -->
+        <div style="margin:0 20px 14px;background:var(--white);border-radius:var(--radius-md);padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.07);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;font-weight:600;color:var(--gray700);">Итого за день</span>
+            <span style="font-size:14px;font-weight:800;color:var(--green6);">1 840 / 2 000 ккал</span>
+          </div>
+          <div style="height:8px;background:var(--gray200);border-radius:4px;overflow:hidden;">
+            <div style="width:92%;height:100%;background:linear-gradient(90deg,#16A34A,#22C55E);border-radius:4px;"></div>
+          </div>
+        </div>
+
+        <!-- Завтрак -->
+        <div class="meal-slot">
+          <div class="meal-slot-header">
+            <div class="meal-type-badge">Завтрак</div>
+            <div class="meal-kcal">342 ккал</div>
+          </div>
+          <div class="meal-recipe-row" onclick="goScreen(1)" style="cursor:pointer;">
+            <div class="meal-recipe-img">
+              <svg width="52" height="52" viewBox="0 0 52 52"><rect fill="#1a2e1a" width="52" height="52"/><circle cx="26" cy="26" r="12" fill="#166534" opacity=".8"/><circle cx="20" cy="22" r="4" fill="#22c55e" opacity=".7"/><circle cx="26" cy="20" r="5" fill="#16a34a" opacity=".8"/><circle cx="32" cy="22" r="3" fill="#15803d" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="meal-recipe-name">Овсяная каша с яблоком</div>
+              <div class="meal-recipe-time">5 + 8 мин · Веган</div>
+            </div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Обед -->
+        <div class="meal-slot">
+          <div class="meal-slot-header">
+            <div class="meal-type-badge">Обед</div>
+            <div class="meal-kcal">620 ккал</div>
+          </div>
+          <div class="meal-recipe-row" onclick="goScreen(1)" style="cursor:pointer;">
+            <div class="meal-recipe-img">
+              <svg width="52" height="52" viewBox="0 0 52 52"><rect fill="#1a1e3a" width="52" height="52"/><ellipse cx="26" cy="30" rx="16" ry="9" fill="none" stroke="#60a5fa" stroke-width="1.2" opacity=".5"/><circle cx="20" cy="24" r="4" fill="#3b82f6" opacity=".7"/><circle cx="26" cy="22" r="5" fill="#2563eb" opacity=".8"/><circle cx="32" cy="24" r="3" fill="#1d4ed8" opacity=".7"/></svg>
+            </div>
+            <div>
+              <div class="meal-recipe-name">Крем-суп из брокколи</div>
+              <div class="meal-recipe-time">10 + 20 мин · Веган</div>
+            </div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div class="meal-recipe-row" onclick="goScreen(1)" style="cursor:pointer;border-top:1px solid var(--gray100);">
+            <div class="meal-recipe-img">
+              <svg width="52" height="52" viewBox="0 0 52 52"><rect fill="#1e3a1a" width="52" height="52"/><ellipse cx="26" cy="30" rx="16" ry="9" fill="none" stroke="#4ade80" stroke-width="1.2" opacity=".5"/><circle cx="20" cy="24" r="4" fill="#22c55e" opacity=".7"/><circle cx="26" cy="22" r="5" fill="#16a34a" opacity=".8"/></svg>
+            </div>
+            <div>
+              <div class="meal-recipe-name">Греческий салат с тофу</div>
+              <div class="meal-recipe-time">10 + 5 мин · Веган</div>
+            </div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Перекус -->
+        <div class="meal-slot">
+          <div class="meal-slot-header">
+            <div class="meal-type-badge">Перекус</div>
+            <div class="meal-kcal">280 ккал</div>
+          </div>
+          <div class="meal-recipe-row" onclick="goScreen(1)" style="cursor:pointer;">
+            <div class="meal-recipe-img">
+              <svg width="52" height="52" viewBox="0 0 52 52"><rect fill="#3a2e1a" width="52" height="52"/><ellipse cx="26" cy="30" rx="16" ry="9" fill="none" stroke="#fbbf24" stroke-width="1.2" opacity=".5"/><circle cx="20" cy="24" r="4" fill="#f59e0b" opacity=".7"/><circle cx="26" cy="22" r="5" fill="#d97706" opacity=".8"/></svg>
+            </div>
+            <div>
+              <div class="meal-recipe-name">Хумус с питой и овощами</div>
+              <div class="meal-recipe-time">5 мин · Веган</div>
+            </div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Ужин -->
+        <div class="meal-slot">
+          <div class="meal-slot-header">
+            <div class="meal-type-badge">Ужин</div>
+            <div class="meal-kcal">598 ккал</div>
+          </div>
+          <div class="meal-recipe-row" onclick="goScreen(1)" style="cursor:pointer;">
+            <div class="meal-recipe-img">
+              <svg width="52" height="52" viewBox="0 0 52 52"><rect fill="#1a2e3a" width="52" height="52"/><ellipse cx="26" cy="30" rx="16" ry="9" fill="none" stroke="#38bdf8" stroke-width="1.2" opacity=".5"/><circle cx="20" cy="24" r="4" fill="#0ea5e9" opacity=".7"/><circle cx="26" cy="22" r="5" fill="#0284c7" opacity=".8"/></svg>
+            </div>
+            <div>
+              <div class="meal-recipe-name">Карри из нута с рисом</div>
+              <div class="meal-recipe-time">15 + 25 мин · Веган</div>
+            </div>
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" style="margin-left:auto;flex-shrink:0;"><path d="M1 1l6 6-6 6" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+
+        <!-- Generate button -->
+        <div style="margin:16px 20px;">
+          <button style="width:100%;padding:15px;background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;border:none;border-radius:var(--radius-md);font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 4px 16px rgba(22,163,74,.3);" onclick="goScreen(5)">
+            Сгенерировать меню с AI
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /screens -->
+
+    <!-- ══════════════════════════════════════════════════════════════════ TAB BAR -->
+    <div class="tab-bar" id="tab-bar">
+      <button class="tab-item active" id="tab-home" onclick="goTab(0)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="tab-label">Рецепты</span>
+      </button>
+      <button class="tab-item" id="tab-roulette" onclick="goTab(1)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>
+        <span class="tab-label">Рулетка</span>
+      </button>
+      <button class="tab-item" id="tab-meal" onclick="goTab(2)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="tab-label">Меню</span>
+      </button>
+      <button class="tab-item" id="tab-health" onclick="goTab(3)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="1.8"/></svg>
+        <span class="tab-label">Здоровье</span>
+      </button>
+      <button class="tab-item" id="tab-profile" onclick="goTab(4)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="tab-label">Профиль</span>
+      </button>
+    </div>
+
+  </div><!-- /phone-inner -->
+</div><!-- /phone-shell -->
+
+<script>
+  let currentScreen = 0;
+  // screen index → x offset (screens 0–5 sequential, screen 6 = meal plan at position 6)
+  const SCREEN_X = [0, 390, 780, 1170, 1560, 1950, 2340];
+
+  // map tab index → screen index
+  const tabScreenMap = [0, 2, 6, 3, 4];
+
+  function goScreen(idx) {
+    currentScreen = idx;
+    document.getElementById('screens').style.transform = `translateX(-${idx * 390}px)`;
+
+    // hide/show tab bar
+    const noTab = [1, 5]; // detail & pro have back button, meal plan keeps tab bar
+    document.getElementById('tab-bar').style.display = noTab.includes(idx) ? 'none' : 'flex';
+
+    // update active tab highlight
+    const tabMap = {0:'tab-home', 2:'tab-roulette', 3:'tab-health', 4:'tab-profile', 6:'tab-meal'};
+    ['tab-home','tab-roulette','tab-meal','tab-health','tab-profile'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active');
+      el.style.color = '#9CA3AF';
+    });
+    if (tabMap[idx]) {
+      const el = document.getElementById(tabMap[idx]);
+      el.classList.add('active');
+      el.style.color = '#16A34A';
+    }
+  }
+
+  function goTab(tabIdx) {
+    const screenIdx = tabScreenMap[tabIdx];
+    goScreen(screenIdx);
+  }
+
+  const ROULETTE_RECIPES = [
+    'Крем-суп из брокколи',
+    'Греческий салат с тофу',
+    'Смузи манго–шпинат',
+    'Фалафель с хумусом',
+    'Шоколадный торт без выпечки',
+    'Ржаной хлеб на закваске',
+    'Ризотто с грибами',
+    'Боул с киноа и авокадо',
+    'Карри из нута',
+    'Тыквенный суп-пюре',
+  ];
+
+  function spinRoulette() {
+    const wheel = document.getElementById('roulette-wheel');
+    const angle = 720 + Math.random() * 360;
+    wheel.style.transition = 'transform 1s cubic-bezier(.17,.67,.12,1)';
+    wheel.style.transform = `rotate(${angle}deg)`;
+    setTimeout(() => {
+      const recipe = ROULETTE_RECIPES[Math.floor(Math.random() * ROULETTE_RECIPES.length)];
+      document.getElementById('roulette-title').textContent = recipe;
+      document.getElementById('roulette-result').style.display = 'block';
+    }, 1000);
+  }
+
+  function switchTab(idx, accent) {
+    const tabs = document.querySelectorAll('#detail-tabs .detail-tab');
+    tabs.forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+    });
+    for (let i = 0; i < 4; i++) {
+      const el = document.getElementById('tab-' + i);
+      if (el) el.style.display = i === idx ? 'block' : 'none';
+    }
+  }
+
+  // Init active colours
+  document.getElementById('tab-home').style.color = '#16A34A';
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+.page { min-height: 100vh; background: var(--gray-50); }
+.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px 80px; }
+.title { font-family: var(--font-display); font-size: 2rem; color: var(--gray-800); margin-bottom: 20px; }
+
+.searchWrap { position: relative; max-width: 400px; margin-bottom: 28px; }
+.searchIcon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-400); }
+.searchInput { width: 100%; padding: 10px 14px 10px 40px; border: 2px solid var(--gray-200); border-radius: 24px; font-size: 0.9rem; outline: none; background: white; transition: border-color var(--transition); }
+.searchInput:focus { border-color: var(--green-500); }
+
+.layout { display: grid; grid-template-columns: 280px 1fr; gap: 24px; align-items: start; }
+.loading { display: flex; justify-content: center; padding: 40px; }
+
+.list { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+.spiceItem { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border-bottom: 1px solid var(--gray-50); transition: background var(--transition); text-align: left; cursor: pointer; }
+.spiceItem:last-child { border-bottom: none; }
+.spiceItem:hover { background: var(--gray-50); }
+.spiceActive { background: var(--green-50) !important; }
+.spiceImg { width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: cover; flex-shrink: 0; }
+.spiceImgPlaceholder { width: 40px; height: 40px; border-radius: var(--radius-sm); background: var(--green-50); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.spiceName { font-size: 0.9rem; font-weight: 600; color: var(--gray-800); }
+.spiceOrigin { display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--gray-400); margin-top: 2px; }
+
+.detail {}
+.detailHeader { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.detailImg { width: 80px; height: 80px; border-radius: var(--radius); object-fit: cover; }
+.detailImgPlaceholder { width: 80px; height: 80px; border-radius: var(--radius); background: var(--green-50); display: flex; align-items: center; justify-content: center; }
+.detailName { font-family: var(--font-display); font-size: 1.6rem; color: var(--gray-800); }
+.detailOrigin { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; color: var(--gray-500); margin-top: 4px; }
+.detailDesc { font-size: 0.88rem; color: var(--gray-600); line-height: 1.6; }
+
+.card { background: white; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+.cardTitle { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.95rem; color: var(--gray-800); margin-bottom: 14px; }
+.nutritionGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+.nutritionItem { text-align: center; padding: 10px; background: var(--green-50); border-radius: var(--radius-sm); }
+.nutritionVal { display: block; font-size: 1rem; font-weight: 700; color: var(--green-700); }
+.nutritionLabel { font-size: 0.72rem; color: var(--gray-500); }
+
+.comboList { display: flex; flex-direction: column; gap: 8px; }
+.comboItem { display: flex; align-items: center; gap: 8px; }
+.comboBar { flex: 1; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+.comboFill { height: 100%; background: var(--green-500); transition: width 0.5s ease; }
+.comboScore { font-size: 0.78rem; font-weight: 600; color: var(--green-700); width: 32px; text-align: right; }
+.comboNote { font-size: 0.75rem; color: var(--gray-400); }
+
+.emptyDetail { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 80px 20px; background: white; border-radius: var(--radius); box-shadow: var(--shadow); color: var(--gray-400); text-align: center; }
+
+@media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
