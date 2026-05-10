@@ -426,11 +426,6 @@ pytest --cov=. --cov-report=term-missing
 | Сервисов в docker-compose | 9 |
 | Строк кода (est.) | ~12 000 |
 
----
-
-## Лицензия
-
-MIT — используйте свободно.
 
 ---
 
