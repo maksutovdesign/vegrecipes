@@ -6,7 +6,6 @@
 [![Frontend](https://img.shields.io/badge/Frontend-React%2018-61DAFB?logo=react)](https://react.dev/)
 [![Mobile](https://img.shields.io/badge/Mobile-Expo%2051-000020?logo=expo)](https://expo.dev/)
 [![Bot](https://img.shields.io/badge/Bot-aiogram%203.7-2CA5E0?logo=telegram)](https://aiogram.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 ---
 
